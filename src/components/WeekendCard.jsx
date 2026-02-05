@@ -1,4 +1,6 @@
-import React from 'react';
+import { useTimeTracking } from '../hooks/useTimeTracking';
+import TimeTracker from './TimeTracker';
+import SessionsTable from './SessionsTable';
 
 const WeekendCard = ({ 
   weekend, 
@@ -8,6 +10,7 @@ const WeekendCard = ({
   onNotesChange 
 }) => {
   const { id, title, description, deliverable } = weekend;
+  const { sessions, activeSession, loading, clockIn, clockOut } = useTimeTracking(id);
 
   return (
     <div
@@ -84,6 +87,24 @@ const WeekendCard = ({
         >
           {deliverable}
         </span>
+      </div>
+
+      {/* Time Tracking Section */}
+      <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+        <div className="flex items-center justify-between mb-4">
+          <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+            Time Tracking:
+          </label>
+          <TimeTracker
+            activeSession={activeSession}
+            onClockIn={clockIn}
+            onClockOut={clockOut}
+            loading={loading}
+          />
+        </div>
+        
+        {/* Sessions Table - only shows after first clock in */}
+        <SessionsTable sessions={sessions} />
       </div>
 
       {/* Notes section */}
