@@ -1,50 +1,57 @@
 import Header from './components/Header';
 import WeekendList from './components/WeekendList';
+import AuthForm from './components/AuthForm';
 import weekends from './data/weekends';
-import { useLocalStorage } from './hooks/useLocalStorage';
+import { useAuth } from './hooks/useAuth';
+import { useProgress } from './hooks/useProgress';
 
 function App() {
-  // Initialize progress state with localStorage persistence
-  const [progress, setProgress] = useLocalStorage('weekend-tracker-progress', {});
+  const { user, loading: authLoading } = useAuth();
+  const { progress, loading: progressLoading, toggleComplete, updateNotes } = useProgress();
 
   // Calculate completed count
   const completedCount = Object.values(progress).filter(p => p.completed).length;
 
-  // Handler for toggling weekend completion
-  const handleToggleComplete = (weekendId) => {
-    setProgress(prev => ({
-      ...prev,
-      [weekendId]: {
-        ...prev[weekendId],
-        completed: !prev[weekendId]?.completed,
-        notes: prev[weekendId]?.notes || ''
-      }
-    }));
-  };
+  // Show loading spinner while checking auth
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
-  // Handler for updating notes
-  const handleNotesChange = (weekendId, notes) => {
-    setProgress(prev => ({
-      ...prev,
-      [weekendId]: {
-        ...prev[weekendId],
-        completed: prev[weekendId]?.completed || false,
-        notes
-      }
-    }));
-  };
+  // Show auth form if not logged in
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex items-center justify-center p-4">
+        <AuthForm />
+      </div>
+    );
+  }
 
+  // Show tracker for logged-in users
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
       <Header completedCount={completedCount} totalCount={weekends.length} />
       
       <main className="max-w-4xl mx-auto px-4 py-8">
-        <WeekendList
-          weekends={weekends}
-          progress={progress}
-          onToggleComplete={handleToggleComplete}
-          onNotesChange={handleNotesChange}
-        />
+        {progressLoading ? (
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600 dark:text-gray-400">Loading your progress...</p>
+          </div>
+        ) : (
+          <WeekendList
+            weekends={weekends}
+            progress={progress}
+            onToggleComplete={toggleComplete}
+            onNotesChange={updateNotes}
+          />
+        )}
       </main>
 
       <footer className="text-center py-6 text-gray-500 dark:text-gray-400 text-sm">
