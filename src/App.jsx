@@ -12,6 +12,11 @@ function App() {
   // Calculate completed count
   const completedCount = Object.values(progress).filter(p => p.completed).length;
 
+  // Find next uncompleted weekend in sequence (for "Up Next" suggestion)
+  const suggestedWeekendId = weekends.find(
+    w => !progress[w.id]?.completed
+  )?.id || null;
+
   // Show loading spinner while checking auth
   if (authLoading) {
     return (
@@ -48,6 +53,7 @@ function App() {
           <WeekendList
             weekends={weekends}
             progress={progress}
+            suggestedWeekendId={suggestedWeekendId}
             onToggleComplete={toggleComplete}
             onNotesChange={updateNotes}
           />

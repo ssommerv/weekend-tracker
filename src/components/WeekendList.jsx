@@ -1,7 +1,6 @@
-import React from 'react';
 import WeekendCard from './WeekendCard';
 
-const WeekendList = ({ weekends, progress, onToggleComplete, onNotesChange }) => {
+const WeekendList = ({ weekends, progress, suggestedWeekendId, onToggleComplete, onNotesChange }) => {
   return (
     <div className="flex flex-col gap-4 md:gap-6 w-full">
       {weekends.map((weekend) => {
@@ -12,6 +11,7 @@ const WeekendList = ({ weekends, progress, onToggleComplete, onNotesChange }) =>
             key={weekend.id}
             weekend={weekend}
             isCompleted={weekendProgress.completed}
+            isSuggested={weekend.id === suggestedWeekendId}
             notes={weekendProgress.notes}
             onToggleComplete={() => onToggleComplete(weekend.id)}
             onNotesChange={(notes) => onNotesChange(weekend.id, notes)}

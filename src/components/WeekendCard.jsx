@@ -4,7 +4,8 @@ import SessionsTable from './SessionsTable';
 
 const WeekendCard = ({ 
   weekend, 
-  isCompleted, 
+  isCompleted,
+  isSuggested,
   notes, 
   onToggleComplete, 
   onNotesChange 
@@ -12,14 +13,22 @@ const WeekendCard = ({
   const { id, title, description, deliverable } = weekend;
   const { sessions, activeSession, loading, clockIn, clockOut } = useTimeTracking(id);
 
+  // Determine card border styling based on state
+  const getCardBorderClass = () => {
+    if (isCompleted) {
+      return 'opacity-75 border-2 border-green-300 dark:border-green-700';
+    }
+    if (isSuggested) {
+      return 'border-2 border-blue-500 dark:border-blue-400 shadow-lg shadow-blue-500/20 dark:shadow-blue-400/20 ring-2 ring-blue-500/20 dark:ring-blue-400/20';
+    }
+    return 'border-2 border-transparent hover:shadow-lg hover:border-blue-200 dark:hover:border-blue-700';
+  };
+
   return (
     <div
       className={`
         bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 transition-all duration-300
-        ${isCompleted 
-          ? 'opacity-75 border-2 border-green-300 dark:border-green-700' 
-          : 'border-2 border-transparent hover:shadow-lg hover:border-blue-200 dark:hover:border-blue-700'
-        }
+        ${getCardBorderClass()}
       `}
     >
       {/* Header with checkbox and weekend number */}
@@ -37,13 +46,18 @@ const WeekendCard = ({
 
         {/* Weekend number and title */}
         <div className="flex-1">
-          <div className="flex items-center gap-2 mb-2">
+          <div className="flex items-center gap-2 mb-2 flex-wrap">
             <span className="text-sm font-semibold text-gray-500 dark:text-gray-400">
               Weekend {id}
             </span>
             {isCompleted && (
               <span className="text-green-600 dark:text-green-400 text-sm font-medium">
                 ✓ Complete
+              </span>
+            )}
+            {isSuggested && !isCompleted && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 animate-pulse">
+                ★ UP NEXT
               </span>
             )}
           </div>
