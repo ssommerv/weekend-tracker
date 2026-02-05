@@ -1,6 +1,7 @@
+import { useAdvancedTasks } from '../hooks/useAdvancedTasks';
 import { useTimeTracking } from '../hooks/useTimeTracking';
-import TimeTracker from './TimeTracker';
 import SessionsTable from './SessionsTable';
+import TimeTracker from './TimeTracker';
 
 const WeekendCard = ({ 
   weekend, 
@@ -10,8 +11,9 @@ const WeekendCard = ({
   onToggleComplete, 
   onNotesChange 
 }) => {
-  const { id, title, description, deliverable } = weekend;
+  const { id, title, description, deliverable, coreWork, advancedTasks, doneWhen, images } = weekend;
   const { sessions, activeSession, loading, clockIn, clockOut } = useTimeTracking(id);
+  const { taskState, loading: tasksLoading, toggleTask } = useAdvancedTasks(id);
 
   // Determine card border styling based on state
   const getCardBorderClass = () => {
@@ -85,6 +87,26 @@ const WeekendCard = ({
         {description}
       </p>
 
+      {doneWhen && (
+        <p className="mb-4 text-sm font-medium text-gray-600 dark:text-gray-400">
+          Done when: {doneWhen}
+        </p>
+      )}
+
+      {Array.isArray(images) && images.length > 0 && (
+        <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {images.map((src, index) => (
+            <img
+              key={`${id}-img-${index}`}
+              src={src}
+              alt={`${title} visual ${index + 1}`}
+              className="w-full h-40 object-cover rounded-lg border border-gray-200 dark:border-gray-700"
+              loading="lazy"
+            />
+          ))}
+        </div>
+      )}
+
       {/* Deliverable */}
       <div className="mb-4">
         <span className="text-sm font-semibold text-gray-600 dark:text-gray-400 mr-2">
@@ -102,6 +124,45 @@ const WeekendCard = ({
           {deliverable}
         </span>
       </div>
+
+      {Array.isArray(coreWork) && coreWork.length > 0 && (
+        <div className="mb-4">
+          <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Core Work</h4>
+          <ul className="list-disc pl-5 space-y-1 text-sm text-gray-700 dark:text-gray-300">
+            {coreWork.map((item, index) => (
+              <li key={`${id}-core-${index}`}>{item}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {Array.isArray(advancedTasks) && advancedTasks.length > 0 && (
+        <div className="mb-4">
+          <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+            Advanced Tasks
+          </h4>
+          <div className="space-y-2">
+            {advancedTasks.map((task, index) => {
+              const completed = !!taskState[index];
+              return (
+                <label
+                  key={`${id}-adv-${index}`}
+                  className="flex items-start gap-3 text-sm text-gray-700 dark:text-gray-300"
+                >
+                  <input
+                    type="checkbox"
+                    className="mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500"
+                    checked={completed}
+                    disabled={tasksLoading}
+                    onChange={() => toggleTask(index, completed)}
+                  />
+                  <span className={completed ? 'line-through text-gray-500' : ''}>{task}</span>
+                </label>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Time Tracking Section */}
       <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
